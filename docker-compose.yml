@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15
+    container_name: fastapi_postgres
+    environment:
+      POSTGRES_DB: app_db
+      POSTGRES_USER: db_master_admin
+      POSTGRES_PASSWORD: db_master_admin_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U db_master_admin -d app_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Application
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastapi_app
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_HOSTNAME: db
+      DATABASE_USERNAME: db_master_admin
+      DATABASE_PASSWORD: db_master_admin_password
+      DATABASE_NAME: app_db
+      DATABASE_PORT: 5432
+      IS_PROD: false
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
