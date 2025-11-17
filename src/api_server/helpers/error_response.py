@@ -10,7 +10,7 @@ from src.models.enums.error_status import ErrorStatus
 from src.models.error_result import ErrorResult
 
 
-def http_exception_from_error(error: ErrorResult | None) -> HTTPException:
+def http_exception_from_error(error: ErrorResult | None = None) -> HTTPException:
     if error:
         match error.status:
             case ErrorStatus.NOT_FOUND_ERROR:

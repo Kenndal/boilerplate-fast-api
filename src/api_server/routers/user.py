@@ -40,6 +40,8 @@ def get_users(
             return result
         case Err(error):
             raise http_exception_from_error(error)
+        case _:
+            raise http_exception_from_error()
 
 
 @router.get("/{user_id}", response_model=User)
@@ -49,6 +51,8 @@ def get_user_by_id(user_id: UUID, user_service: UserService = Depends(get_user_s
             return result
         case Err(error):
             raise http_exception_from_error(error)
+        case _:
+            raise http_exception_from_error()
 
 
 @router.post("/", response_model=User, status_code=HTTP_201_CREATED)
@@ -63,6 +67,8 @@ def create_user(
             return result
         case Err(error):
             raise http_exception_from_error(error)
+        case _:
+            raise http_exception_from_error()
 
 
 @router.patch("/{user_id}", response_model=User)
@@ -78,6 +84,8 @@ def update_user(
             return result
         case Err(error):
             raise http_exception_from_error(error)
+        case _:
+            raise http_exception_from_error()
 
 
 @router.delete("/{user_id}", status_code=HTTP_204_NO_CONTENT)

@@ -37,7 +37,7 @@ def build_app() -> FastAPI:
         openapi_url=f"/{VERSION_PREFIX}/swagger.json",
         docs_url="/",
         debug=not config.IS_PROD,
-        responses=response_400 | response_401 | response_403 | response_422 | response_500,
+        responses=response_400 | response_401 | response_403 | response_500,
     )
 
     # Add routers

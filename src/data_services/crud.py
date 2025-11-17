@@ -18,7 +18,6 @@ from src.utils.exceptions import CrudException, CrudIntegrityError, CrudUniqueVa
 
 logger = logging.getLogger(__name__)
 
-
 def calculate_offset(page_number: int, page_size: int) -> int:
     return (page_number - 1) * page_size
 
