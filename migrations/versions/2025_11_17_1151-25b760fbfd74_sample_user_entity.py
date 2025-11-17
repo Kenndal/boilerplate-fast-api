@@ -20,7 +20,6 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    """Upgrade schema."""
     op.create_table(
         "user",
         sa.Column("id", sa.Uuid(), nullable=False),
@@ -42,7 +41,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    """Downgrade schema."""
     op.drop_index(op.f("ix_sample_schema_user_username"), table_name="user", schema="sample_schema")
     op.drop_index(op.f("ix_sample_schema_user_id"), table_name="user", schema="sample_schema")
     op.drop_index(op.f("ix_sample_schema_user_email"), table_name="user", schema="sample_schema")

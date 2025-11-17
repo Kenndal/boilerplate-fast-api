@@ -6,6 +6,7 @@ from starlette.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from src.api_server.deps import get_user_service
 from src.api_server.helpers.error_response import http_exception_from_error
+from src.api_server.responses import response_409
 from src.constants import (
     DEFAULT_PAGE_NUMBER,
     DEFAULT_PAGE_SIZE,
@@ -55,7 +56,7 @@ def get_user_by_id(user_id: UUID, user_service: UserService = Depends(get_user_s
             raise http_exception_from_error()
 
 
-@router.post("/", response_model=User, status_code=HTTP_201_CREATED)
+@router.post("/", response_model=User, status_code=HTTP_201_CREATED, responses=response_409)
 def create_user(
     user: UserCreate,
     user_service: UserService = Depends(get_user_service),
@@ -71,7 +72,7 @@ def create_user(
             raise http_exception_from_error()
 
 
-@router.patch("/{user_id}", response_model=User)
+@router.patch("/{user_id}", response_model=User, responses=response_409)
 def update_user(
     user_id: UUID,
     user: UserUpdate,
