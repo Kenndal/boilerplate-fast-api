@@ -11,7 +11,7 @@ def to_user_entity(model: UserCreate, user_id: str) -> UserEntity:
         last_name=model.last_name,
         username=model.username,
         email=model.email,
-        is_active=model.is_active,
+        is_active=True,
         created_by_user_id=user_id,
         last_modified_by_user_id=user_id,
     )

@@ -8,7 +8,3 @@ class CrudIntegrityError(CrudException):
 
 class CrudUniqueValidationError(CrudIntegrityError):
     pass
-
-
-class SecretException(Exception):
-    pass
