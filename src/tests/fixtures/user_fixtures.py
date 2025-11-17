@@ -19,7 +19,7 @@ def user_id() -> UUID:
 @pytest.fixture
 def user_create() -> UserCreate:
     return UserCreate(
-        first_name="John", last_name="Doe", username="johndoe", email="john.doe@example.com", is_active=True
+        first_name="John", last_name="Doe", username="johndoe", email="john.doe@example.com"
     )
 
 
@@ -32,7 +32,7 @@ def user_update() -> UserUpdate:
 
 @pytest.fixture
 def user(user_id: UUID, user_create: UserCreate, audit: BaseAudit) -> User:
-    return User(id=user_id, **user_create.model_dump(), **audit.model_dump())
+    return User(id=user_id, is_active=True, **user_create.model_dump(), **audit.model_dump())
 
 
 @pytest.fixture
