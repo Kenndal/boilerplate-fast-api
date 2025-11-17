@@ -1,5 +1,5 @@
-import logging
 from functools import partial
+import logging
 
 from fastapi import FastAPI
 from fastapi.encoders import jsonable_encoder
@@ -19,7 +19,7 @@ from starlette.status import (
 )
 
 from src.api_server.helpers.utils import build_validation_error_detail
-from src.api_server.responses import response_400, response_401, response_403, response_422, response_500
+from src.api_server.responses import response_400, response_401, response_403, response_500
 from src.api_server.routers import user
 from src.config.config import config
 from src.constants import VERSION_PREFIX
@@ -33,7 +33,7 @@ def build_app() -> FastAPI:
     _app = FastAPI(
         title="boilerplate-api",
         description="Boilerplate API",
-        version=f"0.0.1",  # TODO: add support for automatic versioning
+        version="0.0.1",  # TODO: add support for automatic versioning
         openapi_url=f"/{VERSION_PREFIX}/swagger.json",
         docs_url="/",
         debug=not config.IS_PROD,

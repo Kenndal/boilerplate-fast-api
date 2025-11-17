@@ -1,6 +1,5 @@
-import logging
-
 from dataclasses import dataclass
+import logging
 from typing import Any, Protocol, Sequence, Type, cast
 from uuid import UUID
 
@@ -17,6 +16,7 @@ from src.models.enums.sort_direction import SortDirection
 from src.utils.exceptions import CrudException, CrudIntegrityError, CrudUniqueValidationError
 
 logger = logging.getLogger(__name__)
+
 
 def calculate_offset(page_number: int, page_size: int) -> int:
     return (page_number - 1) * page_size

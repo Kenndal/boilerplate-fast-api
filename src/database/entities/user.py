@@ -11,5 +11,5 @@ class UserEntity(Base, BaseAuditEntity):
     id: Mapped[UUID] = mapped_column(primary_key=True, index=True)
     first_name: Mapped[str]
     last_name: Mapped[str]
-    username: Mapped[str] = mapped_column(unique=True)
-    email: Mapped[str] = mapped_column(unique=True)
+    username: Mapped[str] = mapped_column(unique=True, index=True)
+    email: Mapped[str] = mapped_column(unique=True, index=True)

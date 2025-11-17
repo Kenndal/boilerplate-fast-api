@@ -29,6 +29,7 @@ isort = "^5.13.2"
 mypy = "^1.13.0"
 pytest-mock = "^3.14.0"
 types-requests = "^2.32.0.20241016"
+types-psycopg2 = "^2.9.21.20251012"
 
 [build-system]
 requires = ["poetry-core"]

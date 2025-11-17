@@ -9,7 +9,6 @@ from starlette.status import (
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
-    HTTP_409_CONFLICT,
 )
 from starlette.testclient import TestClient
 
@@ -125,11 +124,7 @@ def test_create_user__validation_error(client: TestClient, user_create: UserCrea
 
 
 def test_update_user(
-    client: TestClient,
-    user_id: UUID,
-    user_update: UserUpdate,
-    user: User,
-    mocker: MockerFixture,
+    client: TestClient, user_id: UUID, user_update: UserUpdate, user: User, mocker: MockerFixture
 ) -> None:
     # Arrange
     mocker.patch.object(UserService, "update", return_value=Ok(user))

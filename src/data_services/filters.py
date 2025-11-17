@@ -18,6 +18,7 @@ class FieldValueExistsFilter(Filter):
     """
     Filters for records where the specified field has any values (not empty).
     """
+
     field: Mapped[Any]
 
     def apply(self, stmt: Select[Any] | Exists | Delete) -> Select[Any] | Exists | Delete:
@@ -32,6 +33,7 @@ class FieldValueNotExistsFilter(Filter):
     """
     Filters for records where the specified field has no values (empty).
     """
+
     field: Mapped[Any]
 
     def apply(self, stmt: Select[Any] | Exists | Delete) -> Select[Any] | Exists | Delete:
@@ -45,9 +47,10 @@ class FieldValueNotExistsFilter(Filter):
 class EqualsFilter(Filter):
     """
     Filters for records where the field value equals the specified value.
-    
+
     SQL equivalent: field = 'value'
     """
+
     field: Mapped[Any]
     value: Any
 
@@ -62,9 +65,10 @@ class EqualsFilter(Filter):
 class NotEqualsFilter(Filter):
     """
     Filters for records where the field value does not equal the specified value.
-    
+
     SQL equivalent: field != 'value' OR field <> 'value'
     """
+
     field: Mapped[Any]
     value: Any
 
@@ -80,9 +84,10 @@ class ContainsFilter(Filter):
     """
     Filters for records where the field contains the specified value.
     Works with string and array fields.
-    
+
     SQL equivalent: field LIKE '%value%' (for strings) OR 'value' = ANY(field) (for arrays)
     """
+
     field: Mapped[Any]
     value: Any
 
@@ -98,13 +103,14 @@ class AnyFromListFilter(Filter):
     """
     Filters for records where the array field contains any of the specified values.
     Works only for fields with type ARRAY and PostgreSQL database.
-    
+
     field: ARRAY[Any]
     value: list[Any] = [x, y, z]
     filter condition = x in field OR y in field OR z in field
-    
+
     SQL equivalent: field && ARRAY['x', 'y', 'z'] (array overlap operator)
     """
+
     field: Mapped[Any]
     value: list[Any]
 
@@ -121,11 +127,12 @@ class RelatedEntityFilter(Filter):
     """
     Filters entities based on their relationship to another entity.
     Matches records where the relationship contains any of the specified entity IDs.
-    
+
     SQL equivalent:
     EXISTS (SELECT 1 FROM related_table WHERE related_table.parent_id = main_table.id
         AND related_table.id IN ('id1', 'id2', 'id3'))
     """
+
     field: Mapped[Any]
     related_entity_ids: list[UUID]
 
@@ -142,9 +149,10 @@ class InFilter(Filter):
     """
     Filters for records where the field value is in the specified list of values.
     SQL equivalent: `field IN (value1, value2, value3)`
-    
+
     Example: Filter users where status is in ['active', 'pending', 'verified']
     """
+
     field: Mapped[Any]
     value: list[Any]
 
@@ -160,9 +168,10 @@ class CaseInsensitiveContainsFilter(Filter):
     """
     Filters for records where the field contains the specified value (case-insensitive).
     Uses PostgreSQL's icontains operator for case-insensitive string matching.
-    
+
     SQL equivalent: LOWER(field) LIKE LOWER('%value%') OR field ILIKE '%value%'
     """
+
     field: Mapped[Any]
     value: Any
 

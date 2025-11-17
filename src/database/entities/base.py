@@ -4,13 +4,13 @@ from functools import partial
 from sqlalchemy import MetaData
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-from src.constants import API_SCHEMA_NAME
+from src.config.config import config
 
 utc_now = partial(datetime.now, tz=UTC)
 
 
 class Base(DeclarativeBase):
-    metadata = MetaData(schema=API_SCHEMA_NAME)
+    metadata = MetaData(schema=config.DATABASE_SCHEMA)
 
 
 class BaseAuditEntity:

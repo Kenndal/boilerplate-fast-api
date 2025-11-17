@@ -1,5 +1,4 @@
 # Database schema
-API_SCHEMA_NAME = "boilerplate_api"
 
 # API VERSION Prefix
 VERSION_PREFIX = "v1"

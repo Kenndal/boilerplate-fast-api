@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Generator
+from typing import Any, Generator, cast
 from uuid import uuid4
 
 import pytest
@@ -44,7 +44,7 @@ def audit(user_id: str) -> BaseAudit:
 
 @pytest.fixture()
 def session(mocker: MockerFixture) -> Session:
-    return mocker.MagicMock()
+    return cast(Session, mocker.MagicMock())
 
 
 @pytest.fixture()

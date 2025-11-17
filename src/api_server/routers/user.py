@@ -9,12 +9,12 @@ from src.api_server.helpers.error_response import http_exception_from_error
 from src.constants import (
     DEFAULT_PAGE_NUMBER,
     DEFAULT_PAGE_SIZE,
-    USER_PREFIX,
     OMIT_PAGINATION,
     PAGE_NUMBER,
     PAGE_SIZE,
     SORT_BY,
     SORT_DIRECTION,
+    USER_PREFIX,
 )
 from src.mappers.user import to_user_entity
 from src.models.base import ModelList

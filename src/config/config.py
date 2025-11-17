@@ -1,4 +1,4 @@
-from pydantic import computed_field, Field
+from pydantic import computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -8,11 +8,12 @@ class Config(BaseSettings):
     # Database configuration
     DATABASE_USERNAME: str = "db_master_admin"
     DATABASE_PASSWORD: str = "db_master_admin_password"
-    DATABASE_HOSTNAME: str = "localhost"
-    DATABASE_PORT: int = "5432"
+    DATABASE_HOSTNAME: str = "0.0.0.0"
+    DATABASE_PORT: int = 5432
     DATABASE_NAME: str = "app_db"
+    DATABASE_SCHEMA: str = "sample_schema"
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def DATABASE_URL(self) -> str:
         return (
