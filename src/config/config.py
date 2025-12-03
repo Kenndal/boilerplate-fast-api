@@ -17,7 +17,7 @@ class Config(BaseSettings):
     @property
     def DATABASE_URL(self) -> str:
         return (
-            f"postgresql+psycopg2://{self.DATABASE_USERNAME}:"
+            f"postgresql+asyncpg://{self.DATABASE_USERNAME}:"
             f"{self.DATABASE_PASSWORD}@{self.DATABASE_HOSTNAME}:"
             f"{self.DATABASE_PORT}/{self.DATABASE_NAME}"
         )

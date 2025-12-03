@@ -13,6 +13,8 @@ pydantic = "^2.10.4"
 sqlalchemy = {extras = ["mypy"], version = "^2.0.36"}
 alembic = "^1.14.0"
 psycopg2-binary = "^2.9.10"
+asyncpg = "^0.30.0"
+greenlet = "^3.0.0"
 result = "^0.17.0"
 httpx = "^0.28.1"
 pydantic-settings = "^2.11.0"
@@ -30,6 +32,7 @@ mypy = "^1.13.0"
 pytest-mock = "^3.14.0"
 types-requests = "^2.32.0.20241016"
 types-psycopg2 = "^2.9.21.20251012"
+aiosqlite = "^0.21.0"
 
 [build-system]
 requires = ["poetry-core"]

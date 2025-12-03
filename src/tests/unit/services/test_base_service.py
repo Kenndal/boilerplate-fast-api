@@ -1,5 +1,5 @@
 from functools import partial
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel
@@ -47,18 +47,18 @@ def base_service() -> TestBaseService:
     return srv
 
 
-def test_get_page(base_service: TestBaseService) -> None:
+@pytest.mark.asyncio
+async def test_get_page(base_service: TestBaseService) -> None:
     # Arrange
     page_number = 2
     page_size = 7
     omit_pagination = False
     other_arg = "test"
     model_id = uuid4()
-    base_service.data_service = MagicMock()
-    base_service.data_service.get_by_page.return_value = ([{"id": model_id}], 1)
+    base_service.data_service.get_by_page = AsyncMock(return_value=([{"id": model_id}], 1))
 
     # Act
-    result = base_service.get_page(
+    result = await base_service.get_page(
         page_number=page_number,
         page_size=page_size,
         omit_pagination=omit_pagination,
@@ -75,16 +75,16 @@ def test_get_page(base_service: TestBaseService) -> None:
     )
 
 
-def test_get_page__empty_results(base_service: TestBaseService) -> None:
+@pytest.mark.asyncio
+async def test_get_page__empty_results(base_service: TestBaseService) -> None:
     # Arrange
     page_number = 2
     page_size = 7
     omit_pagination = False
-    base_service.data_service = MagicMock()
-    base_service.data_service.get_by_page.return_value = ([], 0)
+    base_service.data_service.get_by_page = AsyncMock(return_value=([], 0))
 
     # Act
-    result = base_service.get_page(
+    result = await base_service.get_page(
         page_number=page_number,
         page_size=page_size,
         omit_pagination=omit_pagination,
@@ -94,17 +94,17 @@ def test_get_page__empty_results(base_service: TestBaseService) -> None:
     assert result == Ok(ModelList[Model](items=[], total=0))
 
 
-def test_get_page__crud_error(base_service: TestBaseService) -> None:
+@pytest.mark.asyncio
+async def test_get_page__crud_error(base_service: TestBaseService) -> None:
     # Arrange
     page_number = 2
     page_size = 7
     omit_pagination = False
     error_details = "fake error"
-    base_service.data_service = MagicMock()
-    base_service.data_service.get_by_page.side_effect = CrudException(error_details)
+    base_service.data_service.get_by_page = AsyncMock(side_effect=CrudException(error_details))
 
     # Act
-    result = base_service.get_page(
+    result = await base_service.get_page(
         page_number=page_number,
         page_size=page_size,
         omit_pagination=omit_pagination,
@@ -114,41 +114,41 @@ def test_get_page__crud_error(base_service: TestBaseService) -> None:
     assert result == Err(ErrorResult(status=ErrorStatus.INTERNAL_ERROR, details=error_details))
 
 
-def test_get_by_id(base_service: TestBaseService) -> None:
+@pytest.mark.asyncio
+async def test_get_by_id(base_service: TestBaseService) -> None:
     # Arrange
     entity_id = uuid4()
-    base_service.data_service = MagicMock()
-    base_service.data_service.get_by_id.return_value = {"id": entity_id}
+    base_service.data_service.get_by_id = AsyncMock(return_value={"id": entity_id})
 
     # Act
-    result = base_service.get_by_id(entity_id)
+    result = await base_service.get_by_id(entity_id)
 
     # Assert
     assert result == Ok(Model(id=entity_id))
 
 
-def test_get_by_id__crud_error(base_service: TestBaseService) -> None:
+@pytest.mark.asyncio
+async def test_get_by_id__crud_error(base_service: TestBaseService) -> None:
     # Arrange
     entity_id = uuid4()
     error_details = "fake error"
-    base_service.data_service = MagicMock()
-    base_service.data_service.get_by_id.side_effect = CrudException(error_details)
+    base_service.data_service.get_by_id = AsyncMock(side_effect=CrudException(error_details))
 
     # Act
-    result = base_service.get_by_id(entity_id)
+    result = await base_service.get_by_id(entity_id)
 
     # Assert
     assert result == Err(ErrorResult(status=ErrorStatus.INTERNAL_ERROR, details=error_details))
 
 
-def test_get_by_id__not_found(base_service: TestBaseService) -> None:
+@pytest.mark.asyncio
+async def test_get_by_id__not_found(base_service: TestBaseService) -> None:
     # Arrange
     entity_id = uuid4()
-    base_service.data_service = MagicMock()
-    base_service.data_service.get_by_id.return_value = None
+    base_service.data_service.get_by_id = AsyncMock(return_value=None)
 
     # Act
-    result = base_service.get_by_id(entity_id)
+    result = await base_service.get_by_id(entity_id)
 
     # Assert
     assert result == Err(
@@ -161,48 +161,49 @@ def test_get_by_id__not_found(base_service: TestBaseService) -> None:
     )
 
 
-def test_create(base_service: TestBaseService) -> None:
+@pytest.mark.asyncio
+async def test_create(base_service: TestBaseService) -> None:
     # Arrange
     create_model = CreateModel()
     entity_id = uuid4()
     user_id = "fake_user_id"
-    base_service.data_service = MagicMock()
-    base_service.data_service.create.return_value = {"id": entity_id}
+    base_service.data_service.create = AsyncMock(return_value={"id": entity_id})
 
     # Act
-    result = base_service.create(create_model, partial(mapper, entity_id=entity_id), user_id)
+    result = await base_service.create(create_model, partial(mapper, entity_id=entity_id), user_id)
 
     # Assert
     assert result == Ok(Model(id=entity_id))
 
 
-def test_create__crud_error(base_service: TestBaseService) -> None:
+@pytest.mark.asyncio
+async def test_create__crud_error(base_service: TestBaseService) -> None:
     # Arrange
     create_model = CreateModel()
     entity_id = uuid4()
     user_id = "fake_user_id"
     error_details = "fake error"
-    base_service.data_service = MagicMock()
-    base_service.data_service.create.side_effect = CrudException(error_details)
+    base_service.data_service.create = AsyncMock(side_effect=CrudException(error_details))
 
     # Act
-    result = base_service.create(create_model, partial(mapper, entity_id=entity_id), user_id)
+    result = await base_service.create(create_model, partial(mapper, entity_id=entity_id), user_id)
 
     # Assert
     assert result == Err(ErrorResult(status=ErrorStatus.INTERNAL_ERROR, details=error_details))
 
 
-def test_create__crud_unique_validation_error(base_service: TestBaseService) -> None:
+@pytest.mark.asyncio
+async def test_create__crud_unique_validation_error(base_service: TestBaseService) -> None:
     # Arrange
     create_model = CreateModel()
     entity_id = uuid4()
     user_id = "fake_user_id"
     error_details = "fake error"
-    base_service.data_service = MagicMock()
-    base_service.data_service.create.side_effect = CrudUniqueValidationError(error_details)
+
+    base_service.data_service.create = AsyncMock(side_effect=CrudUniqueValidationError(error_details))
 
     # Act
-    result = base_service.create(create_model, partial(mapper, entity_id=entity_id), user_id)
+    result = await base_service.create(create_model, partial(mapper, entity_id=entity_id), user_id)
 
     # Assert
     assert result == Err(
@@ -212,32 +213,32 @@ def test_create__crud_unique_validation_error(base_service: TestBaseService) -> 
     )
 
 
-def test_update(base_service: TestBaseService) -> None:
+@pytest.mark.asyncio
+async def test_update(base_service: TestBaseService) -> None:
     # Arrange
     update_model = UpdateModel()
     entity_id = uuid4()
     user_id = "fake_user_id"
-    base_service.data_service = MagicMock()
-    base_service.data_service.entity_exists.return_value = True
-    base_service.data_service.update.return_value = {"id": entity_id}
+    base_service.data_service.entity_exists = AsyncMock(return_value=True)
+    base_service.data_service.update = AsyncMock(return_value={"id": entity_id})
 
     # Act
-    result = base_service.update(entity_id, update_model, user_id)
+    result = await base_service.update(entity_id, update_model, user_id)
 
     # Assert
     assert result == Ok(Model(id=entity_id))
 
 
-def test_update__not_found(base_service: TestBaseService) -> None:
+@pytest.mark.asyncio
+async def test_update__not_found(base_service: TestBaseService) -> None:
     # Arrange
     update_model = UpdateModel()
     entity_id = uuid4()
     user_id = "fake_user_id"
-    base_service.data_service = MagicMock()
-    base_service.data_service.entity_exists.return_value = False
+    base_service.data_service.entity_exists = AsyncMock(return_value=False)
 
     # Act
-    result = base_service.update(entity_id, update_model, user_id)
+    result = await base_service.update(entity_id, update_model, user_id)
 
     # Assert
     assert result == Err(
@@ -250,34 +251,35 @@ def test_update__not_found(base_service: TestBaseService) -> None:
     )
 
 
-def test_update__crud_error(base_service: TestBaseService) -> None:
+@pytest.mark.asyncio
+async def test_update__crud_error(base_service: TestBaseService) -> None:
     # Arrange
     update_model = UpdateModel()
     entity_id = uuid4()
     user_id = "fake_user_id"
-    base_service.data_service = MagicMock()
-    base_service.data_service.entity_exists.return_value = True
+    base_service.data_service.entity_exists = AsyncMock(return_value=True)
     error_details = "fake error"
-    base_service.data_service.update.side_effect = CrudException(error_details)
+    base_service.data_service.update = AsyncMock(side_effect=CrudException(error_details))
 
     # Act
-    result = base_service.update(entity_id, update_model, user_id)
+    result = await base_service.update(entity_id, update_model, user_id)
 
     # Assert
     assert result == Err(ErrorResult(status=ErrorStatus.INTERNAL_ERROR, details=error_details))
 
 
-def test_update__crud_unique_validation_error(base_service: TestBaseService) -> None:
+@pytest.mark.asyncio
+async def test_update__crud_unique_validation_error(base_service: TestBaseService) -> None:
     # Arrange
     update_model = UpdateModel()
     entity_id = uuid4()
     user_id = "fake_user_id"
     error_details = "fake error"
-    base_service.data_service = MagicMock()
-    base_service.data_service.update.side_effect = CrudUniqueValidationError(error_details)
+    base_service.data_service.entity_exists = AsyncMock(return_value=True)
+    base_service.data_service.update = AsyncMock(side_effect=CrudUniqueValidationError(error_details))
 
     # Act
-    result = base_service.update(entity_id, update_model, user_id)
+    result = await base_service.update(entity_id, update_model, user_id)
 
     # Assert
     assert result == Err(
@@ -288,27 +290,28 @@ def test_update__crud_unique_validation_error(base_service: TestBaseService) -> 
     )
 
 
-def test_delete(base_service: TestBaseService) -> None:
+@pytest.mark.asyncio
+async def test_delete(base_service: TestBaseService) -> None:
     # Arrange
     entity_id = uuid4()
-    base_service.data_service = MagicMock()
-    base_service.data_service.entity_exists.return_value = True
+    base_service.data_service.entity_exists = AsyncMock(return_value=True)
+    base_service.data_service.delete = AsyncMock()
 
     # Act
-    result = base_service.delete(entity_id)
+    result = await base_service.delete(entity_id)
 
     # Assert
     assert result == Ok(None)
 
 
-def test_delete__not_found(base_service: TestBaseService) -> None:
+@pytest.mark.asyncio
+async def test_delete__not_found(base_service: TestBaseService) -> None:
     # Arrange
     entity_id = uuid4()
-    base_service.data_service = MagicMock()
-    base_service.data_service.entity_exists.return_value = False
+    base_service.data_service.entity_exists = AsyncMock(return_value=False)
 
     # Act
-    result = base_service.delete(entity_id)
+    result = await base_service.delete(entity_id)
 
     # Assert
     assert result == Err(
@@ -321,16 +324,16 @@ def test_delete__not_found(base_service: TestBaseService) -> None:
     )
 
 
-def test_delete__crud_error(base_service: TestBaseService) -> None:
+@pytest.mark.asyncio
+async def test_delete__crud_error(base_service: TestBaseService) -> None:
     # Arrange
     entity_id = uuid4()
-    base_service.data_service = MagicMock()
-    base_service.data_service.entity_exists.return_value = True
+    base_service.data_service.entity_exists = AsyncMock(return_value=True)
     error_details = "fake error"
-    base_service.data_service.delete.side_effect = CrudException(error_details)
+    base_service.data_service.delete = AsyncMock(side_effect=CrudException(error_details))
 
     # Act
-    result = base_service.delete(entity_id)
+    result = await base_service.delete(entity_id)
 
     # Assert
     assert result == Err(ErrorResult(status=ErrorStatus.INTERNAL_ERROR, details=error_details))
