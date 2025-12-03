@@ -1,3 +1,9 @@
+build:
+	docker compose build
+
+start:
+	docker compose up
+
 db_migrate:
 	docker compose exec api poetry run alembic revision --autogenerate -m $(message)
 
