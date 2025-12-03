@@ -18,9 +18,7 @@ def user_id() -> UUID:
 
 @pytest.fixture
 def user_create() -> UserCreate:
-    return UserCreate(
-        first_name="John", last_name="Doe", username="johndoe", email="john.doe@example.com"
-    )
+    return UserCreate(first_name="John", last_name="Doe", username="johndoe", email="john.doe@example.com")
 
 
 @pytest.fixture

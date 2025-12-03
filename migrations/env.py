@@ -1,17 +1,15 @@
 from logging.config import fileConfig
-from typing import Any
-
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from typing import Any, cast
 
 from alembic import context
+from sqlalchemy import engine_from_config, pool
 
 from src.config.config import config as app_config
 from src.database.entities.base import Base
 
 config = context.config
 
-fileConfig(config.config_file_name)
+fileConfig(cast(str, config.config_file_name))
 
 target_metadata = Base.metadata
 
