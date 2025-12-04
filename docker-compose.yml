@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: app_db
       POSTGRES_USER: db_master_admin
-      POSTGRES_PASSWORD: db_master_admin_password
+      POSTGRES_PASSWORD: db_master_admin_password  # TODO: Use secrets management for production
     ports:
       - "5432:5432"
     volumes:
@@ -29,7 +29,7 @@ services:
     environment:
       DATABASE_HOSTNAME: db
       DATABASE_USERNAME: db_master_admin
-      DATABASE_PASSWORD: db_master_admin_password
+      DATABASE_PASSWORD: db_master_admin_password  # TODO: Use secrets management for production
       DATABASE_NAME: app_db
       DATABASE_PORT: 5432
       IS_PROD: false
