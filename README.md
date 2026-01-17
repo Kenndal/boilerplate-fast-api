@@ -19,7 +19,7 @@ A production-ready FastAPI boilerplate with PostgreSQL, SQLAlchemy ORM, Alembic 
 ## Prerequisites
 
 - **Python**: ^3.12
-- **Poetry**: Dependency management
+- **uv**: Fast Python package installer and resolver
 - **Docker & Docker Compose**: For containerized development
 - **PostgreSQL**: 15 (provided via Docker)
 
@@ -65,7 +65,8 @@ boilerplate-fast-api/
 ├── docker-compose.yml               # Docker services definition
 ├── Dockerfile                       # Application container
 ├── Makefile                         # Common development commands
-├── pyproject.toml                   # Poetry dependencies and tool configs
+├── pyproject.toml                   # Project dependencies and tool configs
+├── uv.lock                          # uv lockfile with pinned dependencies
 ├── migrations/                      # Database migrations
 │   ├── env.py                       # Alembic environment config
 │   └── versions/                    # Migration scripts

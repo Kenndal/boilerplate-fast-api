@@ -10,7 +10,7 @@ repos:
     hooks:
       - id: black
         name: black
-        entry: poetry run black
+        entry: uv run black
         types: [python]
         language: system
         require_serial: true
@@ -18,7 +18,7 @@ repos:
 
       - id: flake8
         name: flake8
-        entry: poetry run flake8
+        entry: uv run flake8
         types: [python]
         language: system
         require_serial: true
@@ -26,7 +26,7 @@ repos:
 
       - id: isort
         name: isort
-        entry: poetry run isort
+        entry: uv run isort
         types: [python]
         language: system
         require_serial: true
@@ -34,7 +34,7 @@ repos:
 
       - id: mypy
         name: mypy
-        entry: poetry run mypy
+        entry: uv run mypy
         types: [python]
         language: system
         require_serial: true
@@ -42,35 +42,35 @@ repos:
 
       - id: black_all_files
         name: black_all_files
-        entry: poetry run black .
+        entry: uv run black .
         pass_filenames: false
         language: system
         stages: [pre-push]
 
       - id: flake8_all_files
         name: flake8_all_files
-        entry: poetry run flake8 .
+        entry: uv run flake8 .
         pass_filenames: false
         language: system
         stages: [pre-push]
 
       - id: isort_all_files
         name: isort_all_files
-        entry: poetry run isort .
+        entry: uv run isort .
         pass_filenames: false
         language: system
         stages: [pre-push]
 
       - id: mypy_all_files
         name: mypy_all_files
-        entry: poetry run mypy .
+        entry: uv run mypy .
         pass_filenames: false
         language: system
         stages: [pre-push]
 
       - id: unit-tests
         name: Unit tests
-        entry: poetry run pytest src/tests/
+        entry: uv run pytest src/tests/
         pass_filenames: false
         language: system
         stages: [pre-push]

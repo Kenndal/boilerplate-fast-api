@@ -1,39 +1,45 @@
-[tool.poetry]
+[project]
 name = "boilerplate-fast-api"
 version = "0.1.0"
 description = "Boilerplate FastAPI application with SQLAlchemy"
-authors = ["Jakub Przybylo <jkb.przybylo@gmail.com>"]
-package-mode = false
+authors = [
+    {name = "Jakub Przybylo", email = "jkb.przybylo@gmail.com"}
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.120.1",
+    "uvicorn[standard]>=0.34.0",
+    "pydantic>=2.10.4",
+    "sqlalchemy[mypy]>=2.0.36",
+    "alembic>=1.14.0",
+    "psycopg2-binary>=2.9.10",
+    "result>=0.17.0",
+    "httpx>=0.28.1",
+    "pydantic-settings>=2.11.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-fastapi = "^0.120.1"
-uvicorn = {extras = ["standard"], version = "^0.34.0"}
-pydantic = "^2.10.4"
-sqlalchemy = {extras = ["mypy"], version = "^2.0.36"}
-alembic = "^1.14.0"
-psycopg2-binary = "^2.9.10"
-result = "^0.17.0"
-httpx = "^0.28.1"
-pydantic-settings = "^2.11.0"
+[dependency-groups]
+dev = [
+    "black>=24.10.0",
+    "flake8>=7.1.1",
+    "flake8-pyproject>=1.2.3",
+    "pre-commit>=4.0.1",
+    "pytest>=8.3.4",
+    "pytest-asyncio>=0.24.0",
+    "requests>=2.32.3",
+    "isort>=5.13.2",
+    "mypy>=1.13.0",
+    "pytest-mock>=3.14.0",
+    "types-requests>=2.32.0.20241016",
+    "types-psycopg2>=2.9.21.20251012",
+]
 
-[tool.poetry.group.dev.dependencies]
-black = "^24.10.0"
-flake8 = "^7.1.1"
-flake8-pyproject = "^1.2.3"
-pre-commit = "^4.0.1"
-pytest = "^8.3.4"
-pytest-asyncio = "^0.24.0"
-requests = "^2.32.3"
-isort = "^5.13.2"
-mypy = "^1.13.0"
-pytest-mock = "^3.14.0"
-types-requests = "^2.32.0.20241016"
-types-psycopg2 = "^2.9.21.20251012"
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.black]
 line-length = 119
