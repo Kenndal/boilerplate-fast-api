@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 make build          # Build Docker containers
 make start          # Start all services (PostgreSQL + FastAPI on port 5000)
 make test           # Run pytest test suite (runs outside Docker with PYTHONPATH set)
-make pre_commit     # Run all pre-commit hooks (black, isort, flake8, mypy)
+make pre_commit     # Run all pre-commit hooks (ruff format, ruff check, mypy, ty)
 ```
 
 ### Database Migrations
@@ -98,9 +98,10 @@ Follow this exact sequence to maintain architectural consistency:
 
 ### Code Formatting
 - Line length: 119 characters
-- Black for formatting, isort for imports (black-compatible profile)
-- flake8 ignores: E266, W503, E712, E731, E231
+- Ruff for formatting, linting, and import sorting
+- Ruff ignores: ANN101, ANN102, S101, COM812, B008
 - Max cyclomatic complexity: 18
+- ty for strict type checking alongside mypy
 
 ## Important Implementation Details
 

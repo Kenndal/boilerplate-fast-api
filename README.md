@@ -13,7 +13,7 @@ A production-ready FastAPI boilerplate with PostgreSQL, SQLAlchemy ORM, Alembic 
 - **Docker Support**: Fully containerized development environment with Docker Compose
 - **CRUD Operations**: Generic CRUD implementation with filtering, pagination, and sorting
 - **Testing Suite**: pytest-based testing with fixtures and mocks
-- **Code Quality Tools**: Black, isort, flake8, mypy, and pre-commit hooks
+- **Code Quality Tools**: Ruff, mypy, ty, and pre-commit hooks
 - **OpenAPI Documentation**: Auto-generated interactive API docs
 
 ## Prerequisites
@@ -261,10 +261,10 @@ make pre_commit
 ```
 
 This runs:
-- Black (code formatting)
-- isort (import sorting)
-- flake8 (linting)
+- Ruff format (code formatting)
+- Ruff check (linting and import sorting)
 - mypy (type checking)
+- ty (strict type checking)
 
 **Configure your IDE** to use these tools on save for the best experience.
 
@@ -298,12 +298,13 @@ Database sessions are managed via context managers in `get_db()`:
 
 ### Type Safety
 
-The project uses strict mypy configuration:
+The project uses strict type checking with mypy and ty:
 
 - Enable type checking in your IDE
 - All functions should have type annotations
 - Use generics for reusable components
 - Leverage protocol-based design for flexibility
+- ty provides additional runtime type validation and stricter checks
 
 ### Pagination & Filtering
 
