@@ -1,9 +1,10 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 import logging
-from typing import Any, Protocol, Sequence, Type, cast
+from typing import Any, Protocol, cast
 from uuid import UUID
 
-import psycopg2
+import psycopg.errors
 from pydantic import BaseModel
 from pydantic.alias_generators import to_snake
 from sqlalchemy import Delete, Exists, Select, asc, delete, desc, exists, func, select, update
@@ -13,7 +14,7 @@ from sqlalchemy.orm import DeclarativeBase, Session
 from src.constants import DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE
 from src.data_services.filters import Filter
 from src.models.enums.sort_direction import SortDirection
-from src.utils.exceptions import CrudException, CrudIntegrityError, CrudUniqueValidationError
+from src.utils.exceptions import CrudError, CrudIntegrityError, CrudUniqueValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,13 @@ def calculate_offset(page_number: int, page_size: int) -> int:
 
 
 class ModelToEntityMapper[EntityType: DeclarativeBase, CreateModel: BaseModel](Protocol):
-    def __call__(self, model: CreateModel, user_id: str, *args: Any, **kwargs: Any) -> EntityType:
+    def __call__(
+        self,
+        model: CreateModel,
+        user_id: str,
+        *args: Any,  # noqa: ANN401
+        **kwargs: Any,  # noqa: ANN401
+    ) -> EntityType:
         # Forcing new line with this comment.
         ...
 
@@ -31,10 +38,10 @@ class ModelToEntityMapper[EntityType: DeclarativeBase, CreateModel: BaseModel](P
 @dataclass
 class Crud[Entity: DeclarativeBase, CreateModel: BaseModel, UpdateModel: BaseModel]:
     session: Session
-    entity_type: Type[Entity]
+    entity_type: type[Entity]
 
     @property
-    def _entity_name(self) -> Any:
+    def _entity_name(self) -> str:
         return self.entity_type.__name__
 
     def entity_exists(self, entity_id: UUID) -> bool:
@@ -44,7 +51,7 @@ class Crud[Entity: DeclarativeBase, CreateModel: BaseModel, UpdateModel: BaseMod
         except Exception as e:
             error_msg = f"Failed to check if entity {self._entity_name} with id {entity_id} exists"
             logger.error(f"{error_msg}, {str(e)}")
-            raise CrudException(error_msg) from e
+            raise CrudError(error_msg) from e
 
     def condition_exists(self, filters: Sequence[Filter]) -> bool:
         try:
@@ -56,7 +63,7 @@ class Crud[Entity: DeclarativeBase, CreateModel: BaseModel, UpdateModel: BaseMod
         except Exception as e:
             error_msg = f"Failed to check if entities {self._entity_name} exists for conditions {filters}"
             logger.error(f"{error_msg}, {str(e)}")
-            raise CrudException(error_msg) from e
+            raise CrudError(error_msg) from e
 
     def _get_one(self, entity_id: UUID) -> Entity:
         try:
@@ -65,7 +72,7 @@ class Crud[Entity: DeclarativeBase, CreateModel: BaseModel, UpdateModel: BaseMod
         except Exception as e:
             error_msg = f"Failed to retrieve {self._entity_name} with id {entity_id}"
             logger.error(f"{error_msg}, {str(e)}")
-            raise CrudException(error_msg) from e
+            raise CrudError(error_msg) from e
 
     def get_by_id(self, entity_id: UUID, with_for_update: bool = False) -> Entity | None:
         try:
@@ -76,7 +83,7 @@ class Crud[Entity: DeclarativeBase, CreateModel: BaseModel, UpdateModel: BaseMod
         except Exception as e:
             error_msg = f"Failed to retrieve {self._entity_name} with id {entity_id}"
             logger.error(f"{error_msg}, {str(e)}")
-            raise CrudException(error_msg) from e
+            raise CrudError(error_msg) from e
 
     def _apply_params(
         self,
@@ -123,15 +130,15 @@ class Crud[Entity: DeclarativeBase, CreateModel: BaseModel, UpdateModel: BaseMod
                 f"with params: {page_number=}, {page_size=} {omit_pagination=}"
             )
             logger.error(f"{error_msg}, {str(e)}")
-            raise CrudException(error_msg) from e
+            raise CrudError(error_msg) from e
 
     def _create(
         self,
         create_model: CreateModel,
         mapper: ModelToEntityMapper[Entity, CreateModel],
         user_id: str,
-        *args: Any,
-        **kwargs: Any,
+        *args: Any,  # noqa: ANN401
+        **kwargs: Any,  # noqa: ANN401
     ) -> Entity:
         new_entity = mapper(model=create_model, user_id=user_id)
         self.session.add(new_entity)
@@ -148,15 +155,22 @@ class Crud[Entity: DeclarativeBase, CreateModel: BaseModel, UpdateModel: BaseMod
                 f"Failed to create new entity {self._entity_name} with params: {create_model=} due to IntegrityError"
             )
             logger.error(f"{error_msg}, {str(e)}")
-            if isinstance(e.orig, psycopg2.errors.UniqueViolation):
+            if isinstance(e.orig, psycopg.errors.UniqueViolation):
                 raise CrudUniqueValidationError(error_msg) from e
             raise CrudIntegrityError(error_msg) from e
         except Exception as e:
             error_msg = f"Failed to create new entity {self._entity_name} with params: {create_model=}"
             logger.error(f"{error_msg}, {str(e)}")
-            raise CrudException(error_msg) from e
+            raise CrudError(error_msg) from e
 
-    def _update(self, entity_id: UUID, update_model: UpdateModel, user_id: str, *args: Any, **kwargs: Any) -> Entity:
+    def _update(
+        self,
+        entity_id: UUID,
+        update_model: UpdateModel,
+        user_id: str,
+        *args: Any,  # noqa: ANN401
+        **kwargs: Any,  # noqa: ANN401
+    ) -> Entity:
         stmt = (
             update(self.entity_type)
             .where(self.entity_type.id == entity_id)  # type: ignore[attr-defined]
@@ -176,13 +190,13 @@ class Crud[Entity: DeclarativeBase, CreateModel: BaseModel, UpdateModel: BaseMod
                 f"with params: {update_model=} due to IntegrityError"
             )
             logger.error(f"{error_msg}, {str(e)}")
-            if isinstance(e.orig, psycopg2.errors.UniqueViolation):
+            if isinstance(e.orig, psycopg.errors.UniqueViolation):
                 raise CrudUniqueValidationError(error_msg) from e
             raise CrudIntegrityError(error_msg) from e
         except Exception as e:
             error_msg = f"Failed to update entity {self._entity_name} {entity_id} with params: {update_model=}"
             logger.error(f"{error_msg}, {str(e)}")
-            raise CrudException(error_msg) from e
+            raise CrudError(error_msg) from e
 
     def delete(self, entity_id: UUID) -> None:
         try:
@@ -192,7 +206,7 @@ class Crud[Entity: DeclarativeBase, CreateModel: BaseModel, UpdateModel: BaseMod
         except Exception as e:
             error_msg = f"Failed to delete entity {self._entity_name} {entity_id}"
             logger.error(f"{error_msg}, {str(e)}")
-            raise CrudException(error_msg) from e
+            raise CrudError(error_msg) from e
 
     def condition_delete(self, filters: Sequence[Filter]) -> None:
         try:
@@ -204,4 +218,4 @@ class Crud[Entity: DeclarativeBase, CreateModel: BaseModel, UpdateModel: BaseMod
         except Exception as e:
             error_msg = f"Failed to delete entities {self._entity_name} for conditions {filters}"
             logger.error(f"{error_msg}, {str(e)}")
-            raise CrudException(error_msg) from e
+            raise CrudError(error_msg) from e

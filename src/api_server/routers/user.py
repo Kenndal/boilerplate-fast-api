@@ -63,7 +63,7 @@ def create_user(
     # Note: In real implementation, you would get user_id from authentication context
     current_user_id: str = "system",  # Placeholder for actual user authentication
 ) -> User:
-    match user_service.create(user, to_user_entity, current_user_id):
+    match user_service.create(user, to_user_entity, current_user_id):  # ty: ignore[invalid-argument-type]
         case Ok(result):
             return result
         case Err(error):

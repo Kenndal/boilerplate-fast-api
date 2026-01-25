@@ -8,25 +8,17 @@ repos:
 
   - repo: local
     hooks:
-      - id: black
-        name: black
-        entry: uv run black
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
         types: [python]
         language: system
         require_serial: true
         stages: [pre-commit]
 
-      - id: flake8
-        name: flake8
-        entry: uv run flake8
-        types: [python]
-        language: system
-        require_serial: true
-        stages: [pre-commit]
-
-      - id: isort
-        name: isort
-        entry: uv run isort
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix
         types: [python]
         language: system
         require_serial: true
@@ -40,23 +32,24 @@ repos:
         require_serial: true
         stages: [pre-commit]
 
-      - id: black_all_files
-        name: black_all_files
-        entry: uv run black .
+      - id: ty-check
+        name: ty check
+        entry: uv run ty check
+        types: [python]
+        language: system
+        require_serial: true
+        stages: [pre-commit]
+
+      - id: ruff-format-all
+        name: ruff format all files
+        entry: uv run ruff format .
         pass_filenames: false
         language: system
         stages: [pre-push]
 
-      - id: flake8_all_files
-        name: flake8_all_files
-        entry: uv run flake8 .
-        pass_filenames: false
-        language: system
-        stages: [pre-push]
-
-      - id: isort_all_files
-        name: isort_all_files
-        entry: uv run isort .
+      - id: ruff-check-all
+        name: ruff check all files
+        entry: uv run ruff check --fix .
         pass_filenames: false
         language: system
         stages: [pre-push]
@@ -64,6 +57,13 @@ repos:
       - id: mypy_all_files
         name: mypy_all_files
         entry: uv run mypy .
+        pass_filenames: false
+        language: system
+        stages: [pre-push]
+
+      - id: ty-check-all
+        name: ty check all files
+        entry: uv run ty check .
         pass_filenames: false
         language: system
         stages: [pre-push]

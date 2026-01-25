@@ -44,7 +44,7 @@ def build_app() -> FastAPI:
     _app.include_router(user.router, tags=["users"], prefix=f"/{VERSION_PREFIX}")
 
     _app.add_middleware(
-        CORSMiddleware,
+        CORSMiddleware,  # ty: ignore[invalid-argument-type]
         allow_origin_regex=domain_pattern,
         allow_methods=["*"],
         allow_headers=["*"],

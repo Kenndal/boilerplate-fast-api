@@ -1,7 +1,8 @@
-from typing import Any, Generator
+from collections.abc import Generator
+from typing import Any
 from uuid import UUID, uuid4
 
-import psycopg2
+import psycopg
 from pydantic import BaseModel
 import pytest
 from pytest_mock import MockerFixture
@@ -12,7 +13,11 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sess
 from src.data_services.crud import Crud
 from src.data_services.filters import ContainsFilter, EqualsFilter, NotEqualsFilter
 from src.models.enums.sort_direction import SortDirection
-from src.utils.exceptions import CrudException, CrudIntegrityError, CrudUniqueValidationError
+from src.utils.exceptions import (
+    CrudError,
+    CrudIntegrityError,
+    CrudUniqueValidationError,
+)
 
 ENTITY_ID = uuid4()
 ENTITY_NAME = "super_name"
@@ -61,7 +66,7 @@ def fake_mapper_integrity_error(model: CreateModel, user_id: str) -> Entity:
 
 
 def fake_mapper_unique_violation_error(model: CreateModel, user_id: str) -> Entity:
-    raise IntegrityError(statement="", params=[], orig=psycopg2.errors.UniqueViolation())
+    raise IntegrityError(statement="", params=[], orig=psycopg.errors.UniqueViolation())
 
 
 @pytest.fixture(scope="module")
@@ -98,7 +103,12 @@ def update_model() -> UpdateModel:
 
 @pytest.fixture
 def entity(create_model: CreateModel, user_id: str) -> Entity:
-    return Entity(id=ENTITY_ID, index=1, **create_model.model_dump(), last_modified_by_user_id=user_id)
+    return Entity(
+        id=ENTITY_ID,
+        index=1,
+        **create_model.model_dump(),
+        last_modified_by_user_id=user_id,
+    )
 
 
 @pytest.fixture
@@ -112,27 +122,35 @@ def setup_without_created_entity(session: Session, entity: Entity) -> Generator[
 
 
 @pytest.fixture
-def setup_with_created_entity(
-    session: Session, entity: Entity, setup_without_created_entity: None
-) -> Generator[None, Any, None]:
+def setup_with_created_entity(session: Session, entity: Entity, setup_without_created_entity: None) -> None:
     session.add(entity)
     session.commit()
-    yield
+    return
 
 
 @pytest.fixture
 def setup_with_created_multiple_entities(
-    session: Session, entity: Entity, create_model: CreateModel, setup_without_created_entity: None, user_id: str
-) -> Generator[None, Any, None]:
+    session: Session,
+    entity: Entity,
+    create_model: CreateModel,
+    setup_without_created_entity: None,
+    user_id: str,
+) -> None:
     entities = [entity]
     for i in range(2, 5):
         base, super_name = create_model.model_dump()
         entities.append(
-            Entity(id=uuid4(), index=i, base=base, super_name=f"{super_name}-{i}", last_modified_by_user_id=user_id)
+            Entity(
+                id=uuid4(),
+                index=i,
+                base=base,
+                super_name=f"{super_name}-{i}",
+                last_modified_by_user_id=user_id,
+            )
         )
     session.add_all(entities)
     session.commit()
-    yield
+    return
 
 
 @pytest.fixture
@@ -141,7 +159,9 @@ def crud(session: Session) -> Crud[Entity, CreateModel, UpdateModel]:
 
 
 def test_entity_exists(
-    crud: Crud[Entity, CreateModel, UpdateModel], entity: Entity, setup_with_created_entity: None
+    crud: Crud[Entity, CreateModel, UpdateModel],
+    entity: Entity,
+    setup_with_created_entity: None,
 ) -> None:
     # Act
     result = crud.entity_exists(ENTITY_ID)
@@ -151,7 +171,9 @@ def test_entity_exists(
 
 
 def test_entity_exists__not_found(
-    crud: Crud[Entity, CreateModel, UpdateModel], entity: Entity, setup_without_created_entity: None
+    crud: Crud[Entity, CreateModel, UpdateModel],
+    entity: Entity,
+    setup_without_created_entity: None,
 ) -> None:
     # Act
     result = crud.entity_exists(ENTITY_ID)
@@ -161,13 +183,15 @@ def test_entity_exists__not_found(
 
 
 def test_exists__crud_exception(
-    crud: Crud[Entity, CreateModel, UpdateModel], mocker: MockerFixture, setup_without_created_entity: None
+    crud: Crud[Entity, CreateModel, UpdateModel],
+    mocker: MockerFixture,
+    setup_without_created_entity: None,
 ) -> None:
     # Arrange
-    mocker.patch("src.data_services.crud.select", side_effect=CrudException("error"))
+    mocker.patch("src.data_services.crud.select", side_effect=CrudError("error"))
 
     # Act
-    with pytest.raises(CrudException) as e:
+    with pytest.raises(CrudError) as e:
         crud.entity_exists(ENTITY_ID)
 
     # Assert
@@ -175,7 +199,9 @@ def test_exists__crud_exception(
 
 
 def test_get_one(
-    crud: Crud[Entity, CreateModel, UpdateModel], entity: Entity, setup_with_created_entity: None
+    crud: Crud[Entity, CreateModel, UpdateModel],
+    entity: Entity,
+    setup_with_created_entity: None,
 ) -> None:
     # Act
     result = crud._get_one(ENTITY_ID)
@@ -185,10 +211,12 @@ def test_get_one(
 
 
 def test_get_one__not_found(
-    crud: Crud[Entity, CreateModel, UpdateModel], entity: Entity, setup_without_created_entity: None
+    crud: Crud[Entity, CreateModel, UpdateModel],
+    entity: Entity,
+    setup_without_created_entity: None,
 ) -> None:
     # Act
-    with pytest.raises(CrudException) as e:
+    with pytest.raises(CrudError) as e:
         crud._get_one(ENTITY_ID)
 
     # Assert
@@ -196,13 +224,15 @@ def test_get_one__not_found(
 
 
 def test_get_one__crud_exception(
-    crud: Crud[Entity, CreateModel, UpdateModel], mocker: MockerFixture, setup_without_created_entity: None
+    crud: Crud[Entity, CreateModel, UpdateModel],
+    mocker: MockerFixture,
+    setup_without_created_entity: None,
 ) -> None:
     # Arrange
-    mocker.patch("src.data_services.crud.select", side_effect=CrudException("error"))
+    mocker.patch("src.data_services.crud.select", side_effect=CrudError("error"))
 
     # Act
-    with pytest.raises(CrudException) as e:
+    with pytest.raises(CrudError) as e:
         crud._get_one(ENTITY_ID)
 
     # Assert
@@ -210,7 +240,9 @@ def test_get_one__crud_exception(
 
 
 def test_get_by_id(
-    crud: Crud[Entity, CreateModel, UpdateModel], entity: Entity, setup_with_created_entity: None
+    crud: Crud[Entity, CreateModel, UpdateModel],
+    entity: Entity,
+    setup_with_created_entity: None,
 ) -> None:
     # Act
     result = crud.get_by_id(ENTITY_ID)
@@ -220,7 +252,9 @@ def test_get_by_id(
 
 
 def test_get_by_id__not_found(
-    crud: Crud[Entity, CreateModel, UpdateModel], entity: Entity, setup_without_created_entity: None
+    crud: Crud[Entity, CreateModel, UpdateModel],
+    entity: Entity,
+    setup_without_created_entity: None,
 ) -> None:
     # Act
     result = crud.get_by_id(ENTITY_ID)
@@ -230,13 +264,15 @@ def test_get_by_id__not_found(
 
 
 def test_get_by_id__crud_exception(
-    crud: Crud[Entity, CreateModel, UpdateModel], mocker: MockerFixture, setup_without_created_entity: None
+    crud: Crud[Entity, CreateModel, UpdateModel],
+    mocker: MockerFixture,
+    setup_without_created_entity: None,
 ) -> None:
     # Arrange
-    mocker.patch("src.data_services.crud.select", side_effect=CrudException("error"))
+    mocker.patch("src.data_services.crud.select", side_effect=CrudError("error"))
 
     # Act
-    with pytest.raises(CrudException) as e:
+    with pytest.raises(CrudError) as e:
         crud.get_by_id(ENTITY_ID)
 
     # Assert
@@ -293,7 +329,7 @@ def test_create__crud_exception(
     fake_user_id: str,
 ) -> None:
     # Act
-    with pytest.raises(CrudException) as e:
+    with pytest.raises(CrudError) as e:
         crud.create(create_model, fake_mapper_exception, fake_user_id)
 
     # Assert
@@ -326,7 +362,7 @@ def test_update__crud_unique_validation_error(
     # Arrange
     mocker.patch(
         "src.data_services.crud.update",
-        side_effect=IntegrityError(statement="", params=[], orig=psycopg2.errors.UniqueViolation()),
+        side_effect=IntegrityError(statement="", params=[], orig=psycopg.errors.UniqueViolation()),
     )
 
     # Act
@@ -349,7 +385,8 @@ def test_update__crud_integrity_exception(
 ) -> None:
     # Arrange
     mocker.patch(
-        "src.data_services.crud.update", side_effect=IntegrityError(statement="", params=[], orig=Exception())
+        "src.data_services.crud.update",
+        side_effect=IntegrityError(statement="", params=[], orig=Exception()),
     )
 
     # Act
@@ -371,17 +408,21 @@ def test_update__crud_exception(
     fake_user_id: str,
 ) -> None:
     # Arrange
-    mocker.patch("src.data_services.crud.update", side_effect=CrudException("error"))
+    mocker.patch("src.data_services.crud.update", side_effect=CrudError("error"))
 
     # Act
-    with pytest.raises(CrudException) as e:
+    with pytest.raises(CrudError) as e:
         crud.update(ENTITY_ID, update_model, fake_user_id)
 
     # Assert
     assert str(e.value) == f"Failed to update entity Entity {ENTITY_ID} with params: {update_model=}"
 
 
-def test_delete(crud: Crud[Entity, CreateModel, UpdateModel], entity: Entity, setup_with_created_entity: None) -> None:
+def test_delete(
+    crud: Crud[Entity, CreateModel, UpdateModel],
+    entity: Entity,
+    setup_with_created_entity: None,
+) -> None:
     # Act
     crud.delete(ENTITY_ID)
     result = crud.get_by_id(ENTITY_ID)
@@ -391,20 +432,22 @@ def test_delete(crud: Crud[Entity, CreateModel, UpdateModel], entity: Entity, se
 
 
 def test_delete__crud_exception(
-    crud: Crud[Entity, CreateModel, UpdateModel], mocker: MockerFixture, setup_without_created_entity: None
+    crud: Crud[Entity, CreateModel, UpdateModel],
+    mocker: MockerFixture,
+    setup_without_created_entity: None,
 ) -> None:
     # Arrange
-    mocker.patch("src.data_services.crud.delete", side_effect=CrudException("error"))
+    mocker.patch("src.data_services.crud.delete", side_effect=CrudError("error"))
 
     # Act
-    with pytest.raises(CrudException) as e:
+    with pytest.raises(CrudError) as e:
         crud.delete(ENTITY_ID)
 
     # Assert
     assert str(e.value) == f"Failed to delete entity Entity {ENTITY_ID}"
 
 
-@pytest.mark.parametrize("base,expected_total", [("base", 0), ("ENTITY_NAME", 4)])
+@pytest.mark.parametrize(("base", "expected_total"), [("base", 0), ("ENTITY_NAME", 4)])
 def test_condition_delete(
     crud: Crud[Entity, CreateModel, UpdateModel],
     setup_with_created_multiple_entities: None,
@@ -423,15 +466,17 @@ def test_condition_delete(
 
 
 def test_condition_delete__crud_exception(
-    crud: Crud[Entity, CreateModel, UpdateModel], mocker: MockerFixture, setup_without_created_entity: None
+    crud: Crud[Entity, CreateModel, UpdateModel],
+    mocker: MockerFixture,
+    setup_without_created_entity: None,
 ) -> None:
     # Arrange
-    mocker.patch("src.data_services.crud.delete", side_effect=CrudException("error"))
+    mocker.patch("src.data_services.crud.delete", side_effect=CrudError("error"))
     f = EqualsFilter(Entity.base, "base")
     f2 = NotEqualsFilter(Entity.super_name, "super_name")
 
     # Act
-    with pytest.raises(CrudException) as e:
+    with pytest.raises(CrudError) as e:
         crud.condition_delete(filters=[f, f2])
 
     # Assert
@@ -442,7 +487,9 @@ def test_condition_delete__crud_exception(
 
 
 def test_get_by_page(
-    crud: Crud[Entity, CreateModel, UpdateModel], entity: Entity, setup_with_created_entity: None
+    crud: Crud[Entity, CreateModel, UpdateModel],
+    entity: Entity,
+    setup_with_created_entity: None,
 ) -> None:
     # Act
     result, total = crud.get_by_page()
@@ -453,7 +500,7 @@ def test_get_by_page(
 
 
 @pytest.mark.parametrize(
-    "page_number,page_size,omit_pagination,expected_count",
+    ("page_number", "page_size", "omit_pagination", "expected_count"),
     [(1, 1, False, 1), (1, 2, False, 2), (1, 1, True, 4)],
 )
 def test_get_by_page__params(
@@ -488,7 +535,9 @@ def test_get_by_page__page_number(
 
 
 def test_get_by_page__with_equals_filter(
-    crud: Crud[Entity, CreateModel, UpdateModel], entity: Entity, setup_with_created_multiple_entities: None
+    crud: Crud[Entity, CreateModel, UpdateModel],
+    entity: Entity,
+    setup_with_created_multiple_entities: None,
 ) -> None:
     # Arrange
     f = EqualsFilter(Entity.id, ENTITY_ID)
@@ -536,13 +585,33 @@ def test_get_by_page__with_contains_filter(
 
 
 @pytest.mark.parametrize(
-    "sort_by, sort_direction, expected_result",
+    ("sort_by", "sort_direction", "expected_result"),
     [
-        ("super_name", SortDirection.descending, ["super_name-4", "super_name-3", "super_name-2", "super_name"]),
-        ("superName", SortDirection.descending, ["super_name-4", "super_name-3", "super_name-2", "super_name"]),
-        ("super-name", SortDirection.descending, ["super_name-4", "super_name-3", "super_name-2", "super_name"]),
-        ("SuperName", SortDirection.descending, ["super_name-4", "super_name-3", "super_name-2", "super_name"]),
-        ("super_name", SortDirection.ascending, ["super_name", "super_name-2", "super_name-3", "super_name-4"]),
+        (
+            "super_name",
+            SortDirection.descending,
+            ["super_name-4", "super_name-3", "super_name-2", "super_name"],
+        ),
+        (
+            "superName",
+            SortDirection.descending,
+            ["super_name-4", "super_name-3", "super_name-2", "super_name"],
+        ),
+        (
+            "super-name",
+            SortDirection.descending,
+            ["super_name-4", "super_name-3", "super_name-2", "super_name"],
+        ),
+        (
+            "SuperName",
+            SortDirection.descending,
+            ["super_name-4", "super_name-3", "super_name-2", "super_name"],
+        ),
+        (
+            "super_name",
+            SortDirection.ascending,
+            ["super_name", "super_name-2", "super_name-3", "super_name-4"],
+        ),
     ],
 )
 def test_get_by_page__with_sorting(
@@ -564,13 +633,15 @@ def test_get_by_page__with_sorting(
 
 
 def test_get_by_page__crud_exception(
-    crud: Crud[Entity, CreateModel, UpdateModel], mocker: MockerFixture, setup_without_created_entity: None
+    crud: Crud[Entity, CreateModel, UpdateModel],
+    mocker: MockerFixture,
+    setup_without_created_entity: None,
 ) -> None:
     # Arrange
-    mocker.patch("src.data_services.crud.select", side_effect=CrudException("error"))
+    mocker.patch("src.data_services.crud.select", side_effect=CrudError("error"))
 
     # Act
-    with pytest.raises(CrudException) as e:
+    with pytest.raises(CrudError) as e:
         crud.get_by_page()
 
     # Assert
@@ -579,7 +650,7 @@ def test_get_by_page__crud_exception(
     )
 
 
-@pytest.mark.parametrize("super_name,expected_result", [(ENTITY_NAME, True), ("ENTITY_NAME", False)])
+@pytest.mark.parametrize(("super_name", "expected_result"), [(ENTITY_NAME, True), ("ENTITY_NAME", False)])
 def test_condition_exists(
     crud: Crud[Entity, CreateModel, UpdateModel],
     setup_with_created_multiple_entities: None,
@@ -597,15 +668,17 @@ def test_condition_exists(
 
 
 def test_condition_exists__crud_exception(
-    crud: Crud[Entity, CreateModel, UpdateModel], mocker: MockerFixture, setup_without_created_entity: None
+    crud: Crud[Entity, CreateModel, UpdateModel],
+    mocker: MockerFixture,
+    setup_without_created_entity: None,
 ) -> None:
     # Arrange
-    mocker.patch("src.data_services.crud.exists", side_effect=CrudException("error"))
+    mocker.patch("src.data_services.crud.exists", side_effect=CrudError("error"))
     f = EqualsFilter(Entity.base, "base")
     f2 = NotEqualsFilter(Entity.super_name, "super_name")
 
     # Act
-    with pytest.raises(CrudException) as e:
+    with pytest.raises(CrudError) as e:
         crud.condition_exists(filters=[f, f2])
 
     # Assert

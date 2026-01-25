@@ -20,5 +20,5 @@ class BaseAudit(BaseModel):
     last_modified_by_user_id: str
 
     @field_validator("created_date", "last_modified_date")
-    def add_missing_timezone(cls, v: datetime) -> datetime:
+    def add_missing_timezone(cls, v: datetime) -> datetime:  # noqa: N805
         return v.replace(tzinfo=UTC)

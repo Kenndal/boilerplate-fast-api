@@ -2,37 +2,47 @@
 name = "boilerplate-fast-api"
 version = "0.1.0"
 description = "Boilerplate FastAPI application with SQLAlchemy"
-authors = [
-    {name = "Jakub Przybylo", email = "jkb.przybylo@gmail.com"}
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Jakub Przybylo", email = "jkb.przybylo@gmail.com" }]
+requires-python = ">=3.12,<3.14"
+keywords = ["fastapi", "sqlalchemy", "api", "boilerplate"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.13",
+    "Framework :: FastAPI",
 ]
-requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.120.1",
     "uvicorn[standard]>=0.34.0",
     "pydantic>=2.10.4",
     "sqlalchemy[mypy]>=2.0.36",
     "alembic>=1.14.0",
-    "psycopg2-binary>=2.9.10",
+    "psycopg[binary,pool]>=3.2.0",
     "result>=0.17.0",
-    "httpx>=0.28.1",
     "pydantic-settings>=2.11.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/jprzybylo/boilerplate-fast-api"
+Repository = "https://github.com/jprzybylo/boilerplate-fast-api"
+Issues = "https://github.com/jprzybylo/boilerplate-fast-api/issues"
+
 [dependency-groups]
-dev = [
-    "black>=24.10.0",
-    "flake8>=7.1.1",
-    "flake8-pyproject>=1.2.3",
-    "pre-commit>=4.0.1",
+dev = ["ruff>=0.8.0", "mypy>=1.13.0", "pre-commit>=4.0.1", "ty>=0.0.12"]
+test = [
     "pytest>=8.3.4",
     "pytest-asyncio>=0.24.0",
-    "requests>=2.32.3",
-    "isort>=5.13.2",
-    "mypy>=1.13.0",
     "pytest-mock>=3.14.0",
-    "types-requests>=2.32.0.20241016",
-    "types-psycopg2>=2.9.21.20251012",
+    "pytest-cov>=6.0.0",
+    "httpx>=0.28.1",
 ]
+types = ["types-requests>=2.32.0.20241016"]
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple/"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src"]
@@ -41,49 +51,70 @@ packages = ["src"]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.black]
+[tool.ruff]
 line-length = 119
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
+target-version = "py312"
 
-[tool.isort]
-profile = "black"
-skip_glob = ["migrations", "**/__init__.py"]
-line_length = 119
-skip_gitignore = true
-known_first_party = ["src", "integration"]
-force_sort_within_sections = true
-
-[tool.flake8]
-# E266 - too many leading '#' for block comment
-# W503 - line break before binary operator
-# E712 - https://www.flake8rules.com/rules/E712.html
-# E731 - https://www.flake8rules.com/rules/E731.html
-ignore = ["E266", "W503", "E712", "E731", "E231"]
-exclude =[
-    "venv",
-    "*.txt",
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "F",      # Pyflakes (unused imports, undefined names)
+    "W",      # pycodestyle warnings
+    "B",      # flake8-bugbear (likely bugs and design problems)
+    "C90",    # mccabe complexity
+    "I",      # isort (import sorting)
+    "N",      # pep8-naming (naming conventions)
+    "UP",     # pyupgrade (modern Python syntax)
+    "ANN",    # flake8-annotations (type annotations)
+    "ASYNC",  # flake8-async (async/await best practices)
+    "S",      # flake8-bandit (security issues)
+    "BLE",    # flake8-blind-except (blind exception catching)
+    "A",      # flake8-builtins (builtin shadowing)
+    "COM",    # flake8-commas (trailing commas)
+    "DTZ",    # flake8-datetimez (datetime timezone awareness)
+    "T10",    # flake8-debugger (debugger statements)
+    "T20",    # flake8-print (print statements)
+    "PT",     # flake8-pytest-style (pytest best practices)
 ]
-max-line-length = 119
-# McCabe complexity threshold
+ignore = ["ANN101", "ANN102", "S101", "COM812", "B008"]
+
+[tool.ruff.lint.mccabe]
 max-complexity = 18
-# select errors and warnings to enable which are off by default
-select = ["B", "C", "E", "F", "W", "T4", "B9"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src", "integration"]
+force-sort-within-sections = true
+
 
 [tool.mypy]
 python_version = "3.12"
 plugins = ["sqlalchemy.ext.mypy.plugin", "pydantic.mypy"]
 strict = true
 show_error_codes = true
+exclude = "migrations/"
+explicit_package_bases = true
+
+[tool.ty.src]
+exclude = ["**/*.pyi"]
+
+[tool.ty.rules]
+# Equivalent to mypy's warn_redundant_casts
+redundant-cast = "warn"
+# Equivalent to mypy's warn_unused_ignores (ty has this as error by default)
+unused-ignore-comment = "ignore"
+# Additional helpful rules for stricter checking
+invalid-ignore-comment = "error"
+ignore-comment-unknown-rule = "error"
+deprecated = "warn"
+
+# Enable all core type checking rules at error level
+invalid-assignment = "error"
+invalid-argument-type = "ignore"  # Protocol not working
+invalid-return-type = "error"
+unresolved-reference = "error"
+unresolved-import = "error"
+unresolved-attribute = "error"
+call-non-callable = "error"
+missing-argument = "error"
+invalid-method-override = "ignore"
+invalid-parameter-default = "error"

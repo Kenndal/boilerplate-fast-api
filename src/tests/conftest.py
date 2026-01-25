@@ -1,5 +1,5 @@
-from datetime import datetime
-from typing import Any, Generator, cast
+from datetime import UTC, datetime
+from typing import cast
 from uuid import uuid4
 
 import pytest
@@ -29,32 +29,32 @@ def fake_user_id() -> str:
     return "fake_user_id"
 
 
-@pytest.fixture()
-def client() -> Generator[TestClient, Any, None]:
-    yield TestClient(app)
+@pytest.fixture
+def client() -> TestClient:
+    return TestClient(app)
 
 
 @pytest.fixture(scope="session")
 def audit(user_id: str) -> BaseAudit:
-    now = datetime.now()
+    now = datetime.now(tz=UTC)
     return BaseAudit(
         created_date=now, last_modified_date=now, created_by_user_id=user_id, last_modified_by_user_id=user_id
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def session(mocker: MockerFixture) -> Session:
     return cast(Session, mocker.MagicMock())
 
 
-@pytest.fixture()
-def user_data_service(session: Session) -> Generator[UserDataService, Any, None]:
-    yield UserDataService(session=session)
+@pytest.fixture
+def user_data_service(session: Session) -> UserDataService:
+    return UserDataService(session=session)
 
 
-@pytest.fixture()
-def user_service(user_data_service: UserDataService) -> Generator[UserService, Any, None]:
-    yield UserService(data_service=user_data_service)
+@pytest.fixture
+def user_service(user_data_service: UserDataService) -> UserService:
+    return UserService(data_service=user_data_service)
 
 
 @pytest.fixture

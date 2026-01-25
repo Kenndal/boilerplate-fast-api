@@ -12,7 +12,7 @@ from src.models.base import ModelList
 from src.models.enums.error_status import ErrorStatus
 from src.models.error_result import ErrorResult
 from src.services.base_service import BaseService
-from src.utils.exceptions import CrudException, CrudUniqueValidationError
+from src.utils.exceptions import CrudError, CrudUniqueValidationError
 
 
 class Entity(Base):
@@ -40,7 +40,7 @@ def mapper(model: CreateModel, user_id: str, entity_id: UUID) -> Entity:
 TestBaseService = BaseService[Entity, Model, CreateModel, UpdateModel]
 
 
-@pytest.fixture()
+@pytest.fixture
 def base_service() -> TestBaseService:
     srv = TestBaseService(data_service=MagicMock())
     srv.model_class = Model
@@ -101,7 +101,7 @@ def test_get_page__crud_error(base_service: TestBaseService) -> None:
     omit_pagination = False
     error_details = "fake error"
     base_service.data_service = MagicMock()
-    base_service.data_service.get_by_page.side_effect = CrudException(error_details)
+    base_service.data_service.get_by_page.side_effect = CrudError(error_details)
 
     # Act
     result = base_service.get_page(
@@ -132,7 +132,7 @@ def test_get_by_id__crud_error(base_service: TestBaseService) -> None:
     entity_id = uuid4()
     error_details = "fake error"
     base_service.data_service = MagicMock()
-    base_service.data_service.get_by_id.side_effect = CrudException(error_details)
+    base_service.data_service.get_by_id.side_effect = CrudError(error_details)
 
     # Act
     result = base_service.get_by_id(entity_id)
@@ -183,7 +183,7 @@ def test_create__crud_error(base_service: TestBaseService) -> None:
     user_id = "fake_user_id"
     error_details = "fake error"
     base_service.data_service = MagicMock()
-    base_service.data_service.create.side_effect = CrudException(error_details)
+    base_service.data_service.create.side_effect = CrudError(error_details)
 
     # Act
     result = base_service.create(create_model, partial(mapper, entity_id=entity_id), user_id)
@@ -258,7 +258,7 @@ def test_update__crud_error(base_service: TestBaseService) -> None:
     base_service.data_service = MagicMock()
     base_service.data_service.entity_exists.return_value = True
     error_details = "fake error"
-    base_service.data_service.update.side_effect = CrudException(error_details)
+    base_service.data_service.update.side_effect = CrudError(error_details)
 
     # Act
     result = base_service.update(entity_id, update_model, user_id)
@@ -327,7 +327,7 @@ def test_delete__crud_error(base_service: TestBaseService) -> None:
     base_service.data_service = MagicMock()
     base_service.data_service.entity_exists.return_value = True
     error_details = "fake error"
-    base_service.data_service.delete.side_effect = CrudException(error_details)
+    base_service.data_service.delete.side_effect = CrudError(error_details)
 
     # Act
     result = base_service.delete(entity_id)

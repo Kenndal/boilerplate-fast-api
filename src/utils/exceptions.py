@@ -1,8 +1,8 @@
-class CrudException(Exception):
+class CrudError(Exception):  # Renamed from CrudException to follow naming convention
     pass
 
 
-class CrudIntegrityError(CrudException):
+class CrudIntegrityError(CrudError):
     pass
 
 

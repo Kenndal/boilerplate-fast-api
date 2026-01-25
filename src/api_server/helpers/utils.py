@@ -1,5 +1,6 @@
 from collections import namedtuple
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from src.constants import SORT_BY, SORT_DIRECTION
 

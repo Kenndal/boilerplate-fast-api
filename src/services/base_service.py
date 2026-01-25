@@ -10,7 +10,7 @@ from src.database.entities.base import Base
 from src.models.base import ModelList
 from src.models.enums.error_status import ErrorStatus
 from src.models.error_result import ErrorResult
-from src.utils.exceptions import CrudException, CrudUniqueValidationError
+from src.utils.exceptions import CrudError, CrudUniqueValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -47,8 +47,8 @@ class BaseService[Entity: Base, Model: BaseModel, CreateModel: BaseModel, Update
         page_number: int,
         page_size: int,
         omit_pagination: bool,
-        *args: Any,
-        **kwargs: Any,
+        *args: Any,  # noqa: ANN401
+        **kwargs: Any,  # noqa: ANN401
     ) -> Result[ModelList[Model], ErrorResult]:
         try:
             entities, total = self.data_service.get_by_page(
@@ -57,7 +57,7 @@ class BaseService[Entity: Base, Model: BaseModel, CreateModel: BaseModel, Update
                 omit_pagination=omit_pagination,
                 **kwargs,
             )
-        except CrudException as e:
+        except CrudError as e:
             return Err(self._error_response(status=ErrorStatus.INTERNAL_ERROR, details=str(e)))
 
         models = [self.model_class.model_validate(e) for e in entities]
@@ -66,7 +66,7 @@ class BaseService[Entity: Base, Model: BaseModel, CreateModel: BaseModel, Update
     def get_by_id(self, entity_id: UUID, with_for_update: bool = False) -> Result[Model, ErrorResult]:
         try:
             entity = self.data_service.get_by_id(entity_id=entity_id, with_for_update=with_for_update)
-        except CrudException as e:
+        except CrudError as e:
             return Err(self._error_response(status=ErrorStatus.INTERNAL_ERROR, details=str(e)))
 
         if entity is None:
@@ -82,8 +82,8 @@ class BaseService[Entity: Base, Model: BaseModel, CreateModel: BaseModel, Update
         model: CreateModel,
         mapper: ModelToEntityMapper[Entity, CreateModel],
         user_id: str,
-        *args: Any,
-        **kwargs: Any,
+        *args: Any,  # noqa: ANN401
+        **kwargs: Any,  # noqa: ANN401
     ) -> Result[Model, ErrorResult]:
         try:
             entity = self.data_service.create(create_model=model, mapper=mapper, user_id=user_id)
@@ -94,7 +94,7 @@ class BaseService[Entity: Base, Model: BaseModel, CreateModel: BaseModel, Update
                     status=ErrorStatus.CONFLICT, details=self.build_create_crud_unique_validation_error_msg()
                 )
             )
-        except CrudException as e:
+        except CrudError as e:
             return Err(self._error_response(status=ErrorStatus.INTERNAL_ERROR, details=str(e)))
         return Ok(self.model_class.model_validate(entity))
 
@@ -103,12 +103,12 @@ class BaseService[Entity: Base, Model: BaseModel, CreateModel: BaseModel, Update
         entity_id: UUID,
         model: UpdateModel,
         user_id: str,
-        *args: Any,
-        **kwargs: Any,
+        *args: Any,  # noqa: ANN401
+        **kwargs: Any,  # noqa: ANN401
     ) -> Result[Model, ErrorResult]:
         try:
             entity_exists = self.data_service.entity_exists(entity_id=entity_id)
-        except CrudException as e:
+        except CrudError as e:
             return Err(self._error_response(status=ErrorStatus.INTERNAL_ERROR, details=str(e)))
 
         if not entity_exists:
@@ -128,7 +128,7 @@ class BaseService[Entity: Base, Model: BaseModel, CreateModel: BaseModel, Update
                     details=self.build_update_crud_unique_validation_error_msg(entity_id=entity_id),
                 )
             )
-        except CrudException as e:
+        except CrudError as e:
             return Err(self._error_response(status=ErrorStatus.INTERNAL_ERROR, details=str(e)))
 
         return Ok(self.model_class.model_validate(entity))
@@ -136,7 +136,7 @@ class BaseService[Entity: Base, Model: BaseModel, CreateModel: BaseModel, Update
     def delete(self, entity_id: UUID) -> Result[None, ErrorResult]:
         try:
             entity_exists = self.data_service.entity_exists(entity_id=entity_id)
-        except CrudException as e:
+        except CrudError as e:
             return Err(self._error_response(status=ErrorStatus.INTERNAL_ERROR, details=str(e)))
 
         if not entity_exists:
@@ -148,7 +148,7 @@ class BaseService[Entity: Base, Model: BaseModel, CreateModel: BaseModel, Update
 
         try:
             self.data_service.delete(entity_id=entity_id)
-        except CrudException as e:
+        except CrudError as e:
             return Err(self._error_response(status=ErrorStatus.INTERNAL_ERROR, details=str(e)))
 
         return Ok(None)
@@ -156,7 +156,7 @@ class BaseService[Entity: Base, Model: BaseModel, CreateModel: BaseModel, Update
     def entity_exists(self, entity_id: UUID) -> Result[None, ErrorResult]:
         try:
             entity_exists = self.data_service.entity_exists(entity_id=entity_id)
-        except CrudException as e:
+        except CrudError as e:
             return Err(self._error_response(status=ErrorStatus.INTERNAL_ERROR, details=str(e)))
 
         if not entity_exists:

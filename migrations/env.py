@@ -1,5 +1,5 @@
 from logging.config import fileConfig
-from typing import Any, cast
+from typing import cast
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
@@ -14,9 +14,11 @@ fileConfig(cast(str, config.config_file_name))
 target_metadata = Base.metadata
 
 
-def include_object(object: Any, name: Any, type_: Any, reflected: Any, compare_to: Any) -> bool:
-    if hasattr(object, "schema"):
-        return bool(object.schema == app_config.DATABASE_SCHEMA)
+def include_object(  # noqa: A002
+    obj: object, name: str | None, type_: str | None, reflected: bool, compare_to: object | None
+) -> bool:
+    if hasattr(obj, "schema"):
+        return bool(obj.schema == app_config.DATABASE_SCHEMA)
     return True
 
 
