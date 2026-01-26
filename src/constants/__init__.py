@@ -5,6 +5,7 @@ VERSION_PREFIX = "v1"
 
 # API Prefix
 USER_PREFIX = "users"
+TASKS_PREFIX = "tasks"
 
 # Query params
 PAGE_NUMBER = "pageNumber"

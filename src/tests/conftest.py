@@ -8,14 +8,17 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 from src.api_server.main import app
+from src.data_services.task_data_service import TaskDataService
 from src.data_services.user_data_service import UserDataService
 from src.models.base import BaseAudit
 from src.models.enums.error_status import ErrorStatus
 from src.models.error_result import ErrorResult
+from src.services.task_service import TaskService
 from src.services.user_service import UserService
 
 pytest_plugins = [
     "src.tests.fixtures.user_fixtures",
+    "src.tests.fixtures.task_fixtures",
 ]
 
 
@@ -47,14 +50,8 @@ def session(mocker: MockerFixture) -> Session:
     return cast(Session, mocker.MagicMock())
 
 
-@pytest.fixture
-def user_data_service(session: Session) -> UserDataService:
-    return UserDataService(session=session)
-
-
-@pytest.fixture
-def user_service(user_data_service: UserDataService) -> UserService:
-    return UserService(data_service=user_data_service)
+# Service fixtures
+...
 
 
 @pytest.fixture

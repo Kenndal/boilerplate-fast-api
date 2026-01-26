@@ -371,8 +371,7 @@ def test_update__crud_unique_validation_error(
 
     # Assert
     assert (
-        str(e.value)
-        == f"Failed to update entity Entity {ENTITY_ID} with params: {update_model=} due to IntegrityError"
+        str(e.value) == f"Failed to update entity Entity {ENTITY_ID} with params: {update_model=} due to IntegrityError"
     )
 
 
@@ -395,8 +394,7 @@ def test_update__crud_integrity_exception(
 
     # Assert
     assert (
-        str(e.value)
-        == f"Failed to update entity Entity {ENTITY_ID} with params: {update_model=} due to IntegrityError"
+        str(e.value) == f"Failed to update entity Entity {ENTITY_ID} with params: {update_model=} due to IntegrityError"
     )
 
 
