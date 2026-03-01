@@ -59,8 +59,8 @@ def {entity_name}({entity_name}_id: uuid.UUID, {foreign_key_params}) -> {EntityN
         id={entity_name}_id,
         {explicit_fields}
         is_active=True,
-        created_date=datetime.now(timezone.utc),
-        last_modified_date=datetime.now(timezone.utc),
+        created_date=datetime(2024, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+        last_modified_date=datetime(2024, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
         created_by_user_id=str({first_fk_id}),
         last_modified_by_user_id=str({first_fk_id}),
     )
