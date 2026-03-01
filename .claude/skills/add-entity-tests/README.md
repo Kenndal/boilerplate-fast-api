@@ -55,9 +55,9 @@ If the entity doesn't exist yet, use the `add-entity` skill first.
 
 5. **Run tests**:
    ```bash
-   PYTHONPATH=`pwd` uv run pytest src/tests/unit/mappers/test_product_mapper.py -vv
-   PYTHONPATH=`pwd` uv run pytest src/tests/unit/services/test_product_service.py -vv
-   PYTHONPATH=`pwd` uv run pytest src/tests/unit/routers/test_product.py -vv
+   uv run pytest src/tests/unit/mappers/test_product_mapper.py -vv
+   uv run pytest src/tests/unit/services/test_product_service.py -vv
+   uv run pytest src/tests/unit/routers/test_product.py -vv
    ```
 
    Or run all tests:
