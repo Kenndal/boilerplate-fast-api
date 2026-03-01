@@ -20,7 +20,7 @@ if [ -z "$1" ]; then
 fi
 
 ENTITY_NAME=$1
-ENTITY_NAME_UPPER=$(echo "$ENTITY_NAME" | awk '{print toupper(substr($0,1,1)) tolower(substr($0,2))}')
+ENTITY_NAME_UPPER=$(echo "$ENTITY_NAME" | awk -F_ '{for(i=1;i<=NF;i++) printf "%s", toupper(substr($i,1,1)) substr($i,2); print ""}')
 
 echo -e "${BLUE}Validating tests for entity: $ENTITY_NAME (PascalCase: $ENTITY_NAME_UPPER)${NC}"
 echo "=========================================================================="
