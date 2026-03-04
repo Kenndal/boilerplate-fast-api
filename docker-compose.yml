@@ -33,6 +33,7 @@ services:
       DATABASE_NAME: app_db
       DATABASE_PORT: 5432
       IS_PROD: false
+      LOG_FILE_PATH: /var/log/app/app.log
     depends_on:
       db:
         condition: service_healthy

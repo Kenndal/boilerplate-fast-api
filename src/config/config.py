@@ -13,6 +13,10 @@ class Config(BaseSettings):
     DATABASE_NAME: str = "app_db"
     DATABASE_SCHEMA: str = "sample_schema"
 
+    # Logging configuration
+    LOG_FILE_PATH: str = "logs/app.log"
+    LOG_LEVEL: str = "INFO"
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def DATABASE_URL(self) -> str:  # noqa: N802
