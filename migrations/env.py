@@ -1,15 +1,17 @@
-from logging.config import fileConfig
-from typing import cast
+import logging.config
 
 from alembic import context
+from asgi_correlation_id import correlation_id
 from sqlalchemy import engine_from_config, pool
 
 from src.config.config import config as app_config
+from src.config.logging_config import get_logging_config
 from src.database.entities.base import Base
 
 config = context.config
 
-fileConfig(cast(str, config.config_file_name))
+logging.config.dictConfig(get_logging_config(app_config.LOG_FILE_PATH, app_config.LOG_LEVEL))
+correlation_id.set("alembic")
 
 target_metadata = Base.metadata
 

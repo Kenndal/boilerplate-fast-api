@@ -1,6 +1,8 @@
 from functools import partial
 import logging
+import logging.config
 
+from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException, RequestValidationError
@@ -22,9 +24,11 @@ from src.api_server.helpers.utils import build_validation_error_detail
 from src.api_server.responses import response_400, response_401, response_403, response_500
 from src.api_server.routers import user
 from src.config.config import config
+from src.config.logging_config import get_logging_config
 from src.constants import VERSION_PREFIX
 from src.models.problem_details import ProblemDetails
 
+logging.config.dictConfig(get_logging_config(config.LOG_FILE_PATH, config.LOG_LEVEL))
 logger = logging.getLogger(__name__)
 domain_pattern = r"http:\/\/localhost:3000"  # TODO: update with real domains
 
@@ -49,6 +53,7 @@ def build_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    _app.add_middleware(CorrelationIdMiddleware)  # outermost — assigns trace ID before all other processing
 
     _app.openapi()
 
