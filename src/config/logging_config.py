@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import time
-from datetime import datetime, timezone, UTC
+from time import struct_time
 from typing import Any
 
 
@@ -11,7 +11,11 @@ class ConsoleFormatter(logging.Formatter):
 
     Output: 2023-03-08 15:48:21.450 - trace_id - logger_name - LEVEL - message
     """
-    converter = time.gmtime
+
+    @staticmethod
+    def converter(t: float | None) -> struct_time:
+        return time.gmtime(t)
+
     def formatTime(self, record: logging.LogRecord, datefmt: str | None = None) -> str:  # noqa: N802
         ct = self.converter(record.created)
         t = time.strftime("%Y-%m-%d %H:%M:%S", ct)
@@ -21,9 +25,14 @@ class ConsoleFormatter(logging.Formatter):
 class JsonFormatter(logging.Formatter):
     """Structured JSON formatter for file output."""
 
+    @staticmethod
+    def converter(t: float | None) -> struct_time:
+        return time.gmtime(t)
+
     def format(self, record: logging.LogRecord) -> str:
-        dt = datetime.fromtimestamp(record.created, tz=UTC)
-        timestamp = dt.strftime("%Y-%m-%dT%H:%M:%S") + f".{int(record.msecs):03d}Z"
+        ct = self.converter(record.created)
+        t = time.strftime("%Y-%m-%d %H:%M:%S", ct)
+        timestamp = f"{t}.{int(record.msecs):03d}"
         log_record = {
             "timestamp": timestamp,
             "level": record.levelname,
@@ -69,13 +78,11 @@ def get_logging_config(log_file_path: str, log_level: str = "INFO") -> dict[str,
                 "stream": "ext://sys.stdout",
             },
             "file": {
-                "class": "logging.handlers.RotatingFileHandler",
+                "class": "logging.FileHandler",
                 "formatter": "json",
                 "filters": ["correlation_id"],
                 "filename": log_file_path,
                 "encoding": "utf-8",
-                "maxBytes": 10485760,  # 10MB
-                "backupCount": 3,
             },
         },
         "root": {
