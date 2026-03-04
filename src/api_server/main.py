@@ -53,7 +53,7 @@ def build_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    _app.add_middleware(CorrelationIdMiddleware)  # outermost — assigns trace ID before all other processing
+    _app.add_middleware(CorrelationIdMiddleware, validate_request_id=True)  # outermost — assigns trace ID before all other processing
 
     _app.openapi()
 
