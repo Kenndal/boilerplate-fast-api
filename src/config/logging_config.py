@@ -11,7 +11,7 @@ class ConsoleFormatter(logging.Formatter):
 
     Output: 2023-03-08 15:48:21.450 - trace_id - logger_name - LEVEL - message
     """
-
+    converter = time.gmtime
     def formatTime(self, record: logging.LogRecord, datefmt: str | None = None) -> str:  # noqa: N802
         ct = self.converter(record.created)
         t = time.strftime("%Y-%m-%d %H:%M:%S", ct)
